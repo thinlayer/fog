@@ -54,6 +54,12 @@ Shindo.tests('Fog::Storage[:aws] | multipart upload requests', ["aws"]) do
       @parts << data.headers['ETag']
     end
 
+    tests("#upload_part_copy('#{@directory.identity}', 'fog_multipart_upload_copy', '#{@upload_id}', 2, '#{@directory.identity}', 'fog_multipart_upload')").succeeds do
+      pending if Fog.mocking?
+      data = Fog::Storage[:aws].upload_part_copy(@directory.identity, 'fog_multipart_upload_copy', @upload_id, 2, @directory.identity, 'fog_multipart_upload')
+      @parts << data.headers['ETag']
+    end
+
     @list_parts_format = {
       'Bucket'            => String,
       'Initiator' => {
@@ -81,7 +87,8 @@ Shindo.tests('Fog::Storage[:aws] | multipart upload requests', ["aws"]) do
     end
 
     if !Fog.mocking?
-      @parts << Fog::Storage[:aws].upload_part(@directory.identity, 'fog_multipart_upload', @upload_id, 2, ('x' * 4 * 1024 * 1024)).headers['ETag']
+      @parts << Fog::Storage[:aws].upload_part(@directory.identity, 'fog_multipart_upload', @upload_id, 3, ('x' * 4 * 1024 * 1024)).headers['ETag']
+      @parts << Fog::Storage[:aws].upload_part(@directory.identity, 'fog_multipart_upload', @upload_id, 4, @directory.identity, 'fog_multipart_upload_copy').headers['ETag']
     end
 
     @complete_multipart_upload_format = {
